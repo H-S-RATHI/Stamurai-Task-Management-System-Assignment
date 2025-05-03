@@ -112,10 +112,14 @@ export function EditTaskDialog({ task, users, open, onOpenChange, onTaskUpdated 
         description: "The task has been updated successfully.",
       })
 
+      // Update the task list immediately
+      if (onTaskUpdated) {
+        onTaskUpdated(updatedTask)
+      }
+
       // Close the dialog after successful update
       onOpenChange(false)
 
-      onOpenChange(false)
       router.refresh()
     } catch (error) {
       toast({
