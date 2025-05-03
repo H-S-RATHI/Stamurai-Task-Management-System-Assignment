@@ -101,7 +101,7 @@ export function DashboardOverview({ assignedTasks, createdTasks, overdueTasks, u
             <ListTodo className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{assignedTasks.length + createdTasks.length}</div>
+            <div className="text-2xl font-bold">{new Set([...assignedTasks, ...createdTasks].map(task => task.id)).size}</div>
             <p className="text-xs text-muted-foreground">{assignedTasks.length} assigned to you</p>
           </CardContent>
         </Card>
