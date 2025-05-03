@@ -1,6 +1,8 @@
 "use client"
 
 import type React from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 
@@ -9,11 +11,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  if (!token) {
-    window.location.href = '/signin';
-    return null;
-  }
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.replace('/signin');
+    }
+  }, [router]);
 
   const user = { id: '', name: '', email: '', image: '', role: '' };
   return (
