@@ -17,7 +17,7 @@ export default function DashboardLayout({
 
   const user = { id: '', name: '', email: '', image: '', role: '' };
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen w-full flex-col">
       <DashboardHeader user={user} />
       <div className="flex flex-1">
         <DashboardSidebar user={user} />
