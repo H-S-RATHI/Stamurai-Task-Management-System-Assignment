@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react"
+import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, Trash2, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -20,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
+import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
 import { formatDistanceToNow } from "date-fns"
 
 export interface User {
@@ -64,6 +65,8 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
+  const [editTaskOpen, setEditTaskOpen] = useState(false)
+  const [editTask, setEditTask] = useState<Task | null>(null)
   const [searchQuery, setSearchQuery] = useState(urlSearchParams.get("search") || "")
   const [queryVersion, setQueryVersion] = useState(0)
 
@@ -345,8 +348,22 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setEditTask(task)
+                        setEditTaskOpen(true)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(task.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -356,7 +373,24 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
         </div>
       )}
 
-      <CreateTaskDialog open={createTaskOpen} onOpenChange={setCreateTaskOpen} users={users} onTaskCreated={onTaskCreated} />
+      <CreateTaskDialog
+        open={createTaskOpen}
+        onOpenChange={setCreateTaskOpen}
+        onTaskCreated={onTaskCreated}
+      />
+      {editTask && (
+        <EditTaskDialog
+          task={editTask}
+          users={users}
+          open={editTaskOpen}
+          onOpenChange={(open) => {
+            setEditTaskOpen(open)
+            if (!open) {
+              setEditTask(null)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

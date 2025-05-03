@@ -232,7 +232,7 @@ export function EditTaskDialog({ task, users, open, onOpenChange }: EditTaskDial
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.assigneeId}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Assign to..." />
