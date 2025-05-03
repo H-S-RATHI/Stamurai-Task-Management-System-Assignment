@@ -47,9 +47,10 @@ interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   users?: User[]
+  onTaskCreated?: () => Promise<void> | void
 }
 
-export function CreateTaskDialog({ open, onOpenChange, users = [] }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, users = [], onTaskCreated }: CreateTaskDialogProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [allUsers, setAllUsers] = useState<User[]>(users)
@@ -115,8 +116,10 @@ export function CreateTaskDialog({ open, onOpenChange, users = [] }: CreateTaskD
       })
 
       form.reset()
+      if (onTaskCreated) {
+        await onTaskCreated();
+      }
       onOpenChange(false)
-      router.refresh()
     } catch (error) {
       toast({
         title: "Error",
