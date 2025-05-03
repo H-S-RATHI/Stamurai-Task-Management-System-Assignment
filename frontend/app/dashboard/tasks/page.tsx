@@ -16,6 +16,10 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
 
+  const handleTaskCreated = async () => {
+    await fetchTasks()
+  }
+
   const fetchTasks = useCallback(async () => {
     setLoading(true)
     const token = localStorage.getItem("token")
@@ -87,9 +91,9 @@ export default function TasksPage() {
       <CreateTaskDialog
         open={createTaskOpen}
         onOpenChange={setCreateTaskOpen}
-        onTaskCreated={async () => {
-          setLoading(true);
-          await fetchTasks();
+        onTaskCreated={async (task) => {
+          setTasks(prev => [...prev, task])
+          await fetchTasks()
         }}
         users={users}
       />
@@ -100,6 +104,7 @@ export default function TasksPage() {
         searchParams={Object.fromEntries(searchParams.entries())}
         loading={loading}
         onTaskDeleted={(deletedId) => setTasks(tasks => tasks.filter(task => task.id !== deletedId))}
+        onTaskCreated={handleTaskCreated}
       />
     </>
   )

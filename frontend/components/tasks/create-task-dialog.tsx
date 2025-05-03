@@ -24,6 +24,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import type { Task } from "@/components/tasks/task-list"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
@@ -47,7 +48,7 @@ interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   users?: User[]
-  onTaskCreated?: () => Promise<void> | void
+  onTaskCreated?: (task: Task) => Promise<void> | void
 }
 
 export function CreateTaskDialog({ open, onOpenChange, users = [], onTaskCreated }: CreateTaskDialogProps) {
@@ -115,10 +116,10 @@ export function CreateTaskDialog({ open, onOpenChange, users = [], onTaskCreated
         description: "Your task has been created successfully.",
       })
 
-      form.reset()
       if (onTaskCreated) {
-        await onTaskCreated();
+        onTaskCreated(task);
       }
+      form.reset()
       onOpenChange(false)
     } catch (error) {
       toast({

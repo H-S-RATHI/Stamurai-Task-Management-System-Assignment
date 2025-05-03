@@ -57,9 +57,10 @@ interface TaskListProps {
   searchParams: { [key: string]: string | string[] | undefined }
   loading?: boolean
   onTaskDeleted?: (id: string) => void
+  onTaskCreated?: (task: Task) => void
 }
 
-export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted }: TaskListProps) {
+export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted, onTaskCreated }: TaskListProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
@@ -355,7 +356,7 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
         </div>
       )}
 
-      <CreateTaskDialog open={createTaskOpen} onOpenChange={setCreateTaskOpen} users={users} />
+      <CreateTaskDialog open={createTaskOpen} onOpenChange={setCreateTaskOpen} users={users} onTaskCreated={onTaskCreated} />
     </div>
   )
 }
