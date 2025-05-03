@@ -16,8 +16,8 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
 
-  const handleTaskCreated = async () => {
-    await fetchTasks()
+  const handleTaskCreated = async (newTask: Task) => {
+    setTasks(prev => [...prev, newTask])
   }
 
   const fetchTasks = useCallback(async () => {
@@ -91,10 +91,7 @@ export default function TasksPage() {
       <CreateTaskDialog
         open={createTaskOpen}
         onOpenChange={setCreateTaskOpen}
-        onTaskCreated={async (task) => {
-          setTasks(prev => [...prev, task])
-          await fetchTasks()
-        }}
+        onTaskCreated={handleTaskCreated}
         users={users}
       />
       <TaskList
