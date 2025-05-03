@@ -85,6 +85,7 @@ interface TaskDetailProps {
 }
 
 export function TaskDetail({ task, users, currentUser }: TaskDetailProps) {
+  if (!task) return <div>Loading...</div>
   const router = useRouter()
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -269,7 +270,7 @@ export function TaskDetail({ task, users, currentUser }: TaskDetailProps) {
               <CardTitle>Comments</CardTitle>
               <Badge variant="outline">
                 <MessageSquare className="mr-1 h-3 w-3" />
-                {task.comments.length}
+                {task.comments?.length || 0}
               </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -287,14 +288,14 @@ export function TaskDetail({ task, users, currentUser }: TaskDetailProps) {
                 </div>
               </form>
 
-              {task.comments.length === 0 ? (
+              {task.comments?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <MessageSquare className="h-10 w-10 text-muted-foreground mb-2" />
                   <p className="text-muted-foreground">No comments yet</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {task.comments.map((comment) => (
+                  {task.comments?.map((comment) => (
                     <div key={comment.id} className="flex gap-4">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={comment.user.image || ""} alt={comment.user.name || ""} />

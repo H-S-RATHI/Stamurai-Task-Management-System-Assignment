@@ -45,6 +45,26 @@ router.get('/overdue', authenticateToken, async (req, res) => {
   res.json(tasks);
 });
 
+// GET /api/tasks/:id
+router.get('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: { creator: true, assignee: true }
+    });
+    
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json(task);
+  } catch (error) {
+    console.error('Error fetching task:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // GET /api/tasks
 router.get('/', authenticateToken, async (req, res) => {
   const { status, priority, search } = req.query;

@@ -96,39 +96,48 @@ export function CreateTaskDialog({ open, onOpenChange, users = [], onTaskCreated
 
     try {
       const token = localStorage.getItem('token');
+      console.log('[CreateTaskDialog] Creating task with values:', values);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(values),
-      })
+      });
 
+      console.log('[CreateTaskDialog] Task creation response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error("Failed to create task")
+        const error = await response.json();
+        console.error('[CreateTaskDialog] Task creation error:', error);
+        throw new Error(error.message || 'Failed to create task');
       }
 
-      const task = await response.json()
-
+      const task = await response.json();
+      console.log('[CreateTaskDialog] Created task:', task);
+      
       toast({
-        title: "Task created",
-        description: "Your task has been created successfully.",
-      })
+        title: "Success",
+        description: "Task created successfully",
+      });
 
       if (onTaskCreated) {
-        onTaskCreated(task);
+        await onTaskCreated(task);
       }
-      form.reset()
-      onOpenChange(false)
+
+      onOpenChange(false);
+      form.reset();
     } catch (error) {
+      console.error('[CreateTaskDialog] Error creating task:', error);
       toast({
         title: "Error",
-        description: "Failed to create task. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create task",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
