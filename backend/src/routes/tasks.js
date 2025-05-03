@@ -38,4 +38,20 @@ router.get('/overdue', authenticateToken, async (req, res) => {
   res.json(tasks);
 });
 
+// GET /api/tasks
+router.get('/', authenticateToken, async (req, res) => {
+  // For now, return all tasks where the user is creator or assignee
+  const tasks = await prisma.task.findMany({
+    where: {
+      OR: [
+        { creatorId: req.user.id },
+        { assigneeId: req.user.id },
+      ],
+    },
+    orderBy: { dueDate: 'asc' },
+    include: { creator: true, assignee: true },
+  });
+  res.json(tasks);
+});
+
 export default router; 

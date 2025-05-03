@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
@@ -12,13 +12,20 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.replace('/signin');
+    } else {
+      setLoading(false);
     }
   }, [router]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const user = { id: '', name: '', email: '', image: '', role: '' };
   return (

@@ -137,8 +137,12 @@ export function TaskDetail({ task, users, currentUser }: TaskDetailProps) {
 
   const handleDeleteTask = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${task.id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
 
       if (!response.ok) {
@@ -169,10 +173,12 @@ export function TaskDetail({ task, users, currentUser }: TaskDetailProps) {
     setIsSubmittingComment(true)
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${task.id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           content: comment,

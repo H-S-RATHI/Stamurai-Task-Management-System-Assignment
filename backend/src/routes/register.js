@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../db.js';
 import { z } from 'zod';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -36,9 +37,14 @@ router.post('/', async (req, res) => {
       },
     });
 
-    // Return the user without the password
-    const { password, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ token });
   } catch (error) {
     console.error('Error registering user:', error);
     res.status(500).send('Internal error');

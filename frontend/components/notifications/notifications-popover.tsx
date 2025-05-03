@@ -40,7 +40,12 @@ export function NotificationsPopover({
   const fetchNotifications = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`)
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       if (response.ok) {
         const data = await response.json()
         setNotifications(data)
@@ -60,10 +65,12 @@ export function NotificationsPopover({
 
   const markAsRead = async (id: string) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ id }),
       })

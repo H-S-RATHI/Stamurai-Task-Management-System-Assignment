@@ -81,10 +81,12 @@ export function EditTaskDialog({ task, users, open, onOpenChange }: EditTaskDial
     setIsSubmitting(true)
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(values),
       })

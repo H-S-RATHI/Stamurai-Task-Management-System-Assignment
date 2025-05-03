@@ -70,7 +70,12 @@ export function CreateTaskDialog({ open, onOpenChange, users = [] }: CreateTaskD
     if (users.length === 0) {
       const fetchUsers = async () => {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`)
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (response.ok) {
             const data = await response.json()
             setAllUsers(data)
@@ -88,10 +93,12 @@ export function CreateTaskDialog({ open, onOpenChange, users = [] }: CreateTaskD
     setIsSubmitting(true)
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(values),
       })

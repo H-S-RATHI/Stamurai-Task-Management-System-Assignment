@@ -3,10 +3,17 @@ import jwt from 'jsonwebtoken';
 export function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
+  if (!token) {
+    console.error('No token provided in Authorization header');
+    return res.sendStatus(401);
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
+    if (err) {
+      console.error('JWT verification error:', err);
+      console.error('Token received:', token);
+      return res.sendStatus(403);
+    }
     req.user = user;
     next();
   });
