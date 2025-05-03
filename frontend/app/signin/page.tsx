@@ -1,14 +1,20 @@
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "@/lib/auth"
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { SignInForm } from "@/components/auth/signin-form"
 
-export default async function SignInPage() {
-  const session = await getServerSession(authOptions)
+export default function SignInPage() {
+  const router = useRouter()
 
-  if (session) {
-    redirect("/dashboard")
-  }
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token")
+      if (token) {
+        router.replace("/dashboard")
+      }
+    }
+  }, [router])
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center">

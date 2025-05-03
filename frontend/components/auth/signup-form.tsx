@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { signIn } from "next-auth/react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -46,7 +45,7 @@ export function SignUpForm() {
     setError(null)
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,12 +62,9 @@ export function SignUpForm() {
         throw new Error(data.message || "Failed to register")
       }
 
-      // Sign in the user after successful registration
-      await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        redirect: false,
-      })
+      // Get the token from the backend response and store it in localStorage
+      const data = await response.json()
+      localStorage.setItem("token", data.token)
 
       router.push("/dashboard")
       router.refresh()
