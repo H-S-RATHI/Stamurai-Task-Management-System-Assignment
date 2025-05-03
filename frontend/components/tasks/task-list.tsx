@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, Filter, Plus, Search, SlidersHorizontal } from "lucide-react"
@@ -55,16 +55,28 @@ interface TaskListProps {
   users: User[]
   currentUser: User
   searchParams: { [key: string]: string | string[] | undefined }
+  loading?: boolean
 }
 
-export function TaskList({ tasks, users, currentUser, searchParams }: TaskListProps) {
+export function TaskList({ tasks, users, currentUser, searchParams, loading }: TaskListProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState(urlSearchParams.get("search") || "")
+  const [queryVersion, setQueryVersion] = useState(0)
+
+  // Sync searchQuery with URL search param
+  useEffect(() => {
+    setSearchQuery(urlSearchParams.get("search") || "")
+  }, [urlSearchParams])
 
   const statusFilter = urlSearchParams.get("status") || "ALL"
   const priorityFilter = urlSearchParams.get("priority") || "ALL"
+
+  useEffect(() => {
+    console.log("[DEBUG] statusFilter:", statusFilter)
+    console.log("[DEBUG] priorityFilter:", priorityFilter)
+  }, [statusFilter, priorityFilter])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -246,7 +258,11 @@ export function TaskList({ tasks, users, currentUser, searchParams }: TaskListPr
         </div>
       </div>
 
-      {tasks.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-10">
+          <span>Loading...</span>
+        </div>
+      ) : tasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
           <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
             <Filter className="h-10 w-10 text-muted-foreground mb-2" />

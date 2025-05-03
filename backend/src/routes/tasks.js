@@ -47,14 +47,28 @@ router.get('/overdue', authenticateToken, async (req, res) => {
 
 // GET /api/tasks
 router.get('/', authenticateToken, async (req, res) => {
-  // For now, return all tasks where the user is creator or assignee
+  const { status, priority, search } = req.query;
+
+  // Build the where clause dynamically
+  const where = {
+    OR: [
+      { creatorId: req.user.id },
+      { assigneeId: req.user.id },
+    ],
+    ...(status && status !== 'ALL' ? { status } : {}),
+    ...(priority && priority !== 'ALL' ? { priority } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
+  };
+
   const tasks = await prisma.task.findMany({
-    where: {
-      OR: [
-        { creatorId: req.user.id },
-        { assigneeId: req.user.id },
-      ],
-    },
+    where,
     orderBy: { dueDate: 'asc' },
     include: { creator: true, assignee: true },
   });

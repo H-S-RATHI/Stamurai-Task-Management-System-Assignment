@@ -81,8 +81,6 @@ export default function TasksPage() {
     fetchTasks()
   }, [fetchTasks])
 
-  if (loading) return <div>Loading...</div>
-
   return (
     <>
       <CreateTaskDialog
@@ -94,7 +92,13 @@ export default function TasksPage() {
         }}
         users={users}
       />
-      <TaskList tasks={tasks} users={users} currentUser={currentUser || { id: '', name: '', email: '', image: '' }} searchParams={Object.fromEntries(searchParams.entries())} />
+      <TaskList
+        tasks={tasks}
+        users={users}
+        currentUser={currentUser || { id: '', name: '', email: '', image: '' }}
+        searchParams={Object.fromEntries(searchParams.entries())}
+        loading={loading}
+      />
     </>
   )
 }
