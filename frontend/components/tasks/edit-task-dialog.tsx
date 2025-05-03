@@ -68,6 +68,14 @@ export function EditTaskDialog({ task, users, open, onOpenChange, onTaskUpdated 
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: task.title,
+      description: task.description || "",
+      status: task.status as "TODO" | "IN_PROGRESS" | "COMPLETED",
+      priority: task.priority as "LOW" | "MEDIUM" | "HIGH",
+      dueDate: new Date(task.dueDate),
+      assigneeId: task.assigneeId || "",
+    },
   })
 
   useEffect(() => {
@@ -99,14 +107,13 @@ export function EditTaskDialog({ task, users, open, onOpenChange, onTaskUpdated 
 
       const updatedTask = await response.json()
 
-      if (onTaskUpdated) {
-        onTaskUpdated(updatedTask)
-      }
-
       toast({
         title: "Task updated",
         description: "The task has been updated successfully.",
       })
+
+      // Close the dialog after successful update
+      onOpenChange(false)
 
       onOpenChange(false)
       router.refresh()
