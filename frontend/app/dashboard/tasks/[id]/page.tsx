@@ -1,15 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import { useRouter } from "next/navigation"
 import { TaskDetail } from "@/components/tasks/task-detail"
 
-export default function TaskDetailPage({ params }: { params: { id: string } }) {
+export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [task, setTask] = useState(null)
   const [users, setUsers] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  // Unwrap params using React.use()
+  const { id } = use(params)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -21,7 +24,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     const fetchData = async () => {
       try {
         // Fetch task details
-        const taskRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${params.id}`, {
+        const taskRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (taskRes.status === 404) {
@@ -53,7 +56,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     }
 
     fetchData()
-  }, [router, params.id])
+  }, [router, id])
 
   if (loading) return <div>Loading...</div>
   if (!task) return null
