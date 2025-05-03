@@ -62,6 +62,20 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted, onTaskCreated, onTaskUpdated }: TaskListProps) {
+  // Calculate task counts
+  const totalTasks = tasks.length;
+  const assignedTasks = tasks.filter(task => task.assigneeId === currentUser.id).length;
+  const createdTasks = tasks.filter(task => task.creatorId === currentUser.id).length;
+  const overdueTasks = tasks.filter(task => task.assigneeId === currentUser.id && 
+    new Date(task.dueDate) < new Date() && 
+    task.status !== 'COMPLETED').length;
+
+  console.log('[TaskList] Task counts:', {
+    total: totalTasks,
+    assigned: assignedTasks,
+    created: createdTasks,
+    overdue: overdueTasks
+  });
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
@@ -294,90 +308,98 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
         <div className="flex justify-center items-center py-10">
           <span>Loading...</span>
         </div>
-      ) : tasks.length === 0 ? (
+      ) : totalTasks === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
           <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
             <Filter className="h-10 w-10 text-muted-foreground mb-2" />
             <h3 className="mt-4 text-lg font-semibold">No tasks found</h3>
-            <p className="mb-4 mt-2 text-sm text-muted-foreground">
-              {searchQuery
-                ? "No tasks match your search criteria. Try adjusting your search or filters."
-                : "You don't have any tasks yet. Create your first task to get started."}
+            <p className="text-sm text-muted-foreground">
+              {assignedTasks > 0 && `You have ${assignedTasks} assigned tasks.`}
+              {createdTasks > 0 && `You have created ${createdTasks} tasks.`}
+              {overdueTasks > 0 && `You have ${overdueTasks} overdue tasks.`}
             </p>
-            <Button onClick={() => setCreateTaskOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Task
-            </Button>
           </div>
         </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Assignee</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell>
-                    <Link href={`/dashboard/tasks/${task.id}`} className="font-medium hover:underline">
-                      {task.title}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(task.status)}>{formatStatus(task.status)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={getPriorityColor(task.priority)}>
-                      {task.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={task.assignee?.image || ""} alt={task.assignee?.name || ""} />
-                        <AvatarFallback>{task.assignee?.name?.charAt(0) || "U"}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{task.assignee?.name || "Unassigned"}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={
-                        new Date(task.dueDate) < new Date() && task.status !== "COMPLETED"
-                          ? "text-red-500 font-medium"
-                          : ""
-                      }
-                    >
-                      {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setEditTask(task)
-                        setEditTaskOpen(true)
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </TableCell>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">Total: {totalTasks}</Badge>
+                <Badge variant="outline">Assigned: {assignedTasks}</Badge>
+                <Badge variant="outline">Created: {createdTasks}</Badge>
+                <Badge variant="destructive">Overdue: {overdueTasks}</Badge>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Assignee</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {tasks.map((task) => (
+                  <TableRow key={task.id}>
+                    <TableCell>
+                      <Link href={`/dashboard/tasks/${task.id}`} className="font-medium hover:underline">
+                        {task.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(task.status)}>{formatStatus(task.status)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                        {task.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={task.assignee?.image || ""} alt={task.assignee?.name || ""} />
+                          <AvatarFallback>{task.assignee?.name?.charAt(0) || "U"}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{task.assignee?.name || "Unassigned"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={
+                          new Date(task.dueDate) < new Date() && task.status !== "COMPLETED"
+                            ? "text-red-500 font-medium"
+                            : ""
+                        }
+                      >
+                        {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditTask(task)
+                          setEditTaskOpen(true)
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
