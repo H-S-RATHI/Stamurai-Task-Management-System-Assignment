@@ -40,8 +40,14 @@ export function DashboardHeader({ user }: HeaderProps) {
 
     // Fetch notification count
     const fetchNotifications = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return; // Don't fetch if not logged in
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const data = await response.json()
           setNotificationCount(data.length)
