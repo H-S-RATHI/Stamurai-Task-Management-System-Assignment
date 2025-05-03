@@ -49,6 +49,7 @@ export interface Task {
     name?: string | null
     image?: string | null
   }
+  updatedAt: Date
 }
 
 interface TaskListProps {
@@ -59,9 +60,10 @@ interface TaskListProps {
   loading?: boolean
   onTaskDeleted?: (id: string) => void
   onTaskCreated?: (task: Task) => void
+  onTaskUpdated?: (task: Task) => void
 }
 
-export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted, onTaskCreated }: TaskListProps) {
+export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted, onTaskCreated, onTaskUpdated }: TaskListProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
@@ -160,122 +162,120 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
     }
   }
 
-  const handleDelete = async (taskId: string) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete task");
-      if (onTaskDeleted) onTaskDeleted(taskId);
-    } catch (e) {
-      alert("Failed to delete task. Please try again.");
+  const handleDelete = async (id: string) => {
+    if (onTaskDeleted) {
+      onTaskDeleted(id)
     }
-  };
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-md border p-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-32" />
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center space-x-4">
+                <div className="h-4 bg-gray-200 rounded w-48 flex-1" />
+                <div className="h-4 bg-gray-200 rounded w-24" />
+                <div className="h-4 bg-gray-200 rounded w-24" />
+                <div className="h-4 bg-gray-200 rounded w-32" />
+                <div className="h-4 bg-gray-200 rounded w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-        <Button onClick={() => setCreateTaskOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Task
+        <h2 className="text-2xl font-bold">Tasks</h2>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setCreateTaskOpen(true)}
+        >
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <form onSubmit={handleSearch} className="flex items-center gap-2 sm:w-96">
-          <Input
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9"
-          />
-          <Button type="submit" size="sm" variant="ghost">
-            <Search className="h-4 w-4" />
-            <span className="sr-only">Search</span>
-          </Button>
-        </form>
-
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <Filter className="mr-2 h-4 w-4" />
-                Status
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem
-                checked={statusFilter === "ALL"}
-                onCheckedChange={() => handleStatusChange("ALL")}
-              >
-                All
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={statusFilter === "TODO"}
-                onCheckedChange={() => handleStatusChange("TODO")}
-              >
-                To Do
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={statusFilter === "IN_PROGRESS"}
-                onCheckedChange={() => handleStatusChange("IN_PROGRESS")}
-              >
-                In Progress
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={statusFilter === "COMPLETED"}
-                onCheckedChange={() => handleStatusChange("COMPLETED")}
-              >
-                Completed
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                Priority
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem
-                checked={priorityFilter === "ALL"}
-                onCheckedChange={() => handlePriorityChange("ALL")}
-              >
-                All
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={priorityFilter === "HIGH"}
-                onCheckedChange={() => handlePriorityChange("HIGH")}
-              >
-                High
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={priorityFilter === "MEDIUM"}
-                onCheckedChange={() => handlePriorityChange("MEDIUM")}
-              >
-                Medium
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={priorityFilter === "LOW"}
-                onCheckedChange={() => handlePriorityChange("LOW")}
-              >
-                Low
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search tasks..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <Button onClick={handleSearch}>
+          <Search className="mr-2 h-4 w-4" />
+          Search
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Filter className="mr-2 h-4 w-4" />
+              Filters
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              checked={statusFilter === "ALL"}
+              onCheckedChange={(checked) => handleStatusChange(checked ? "ALL" : "")}
+            >
+              All
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={statusFilter === "TODO"}
+              onCheckedChange={(checked) => handleStatusChange(checked ? "TODO" : "")}
+            >
+              To Do
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={statusFilter === "IN_PROGRESS"}
+              onCheckedChange={(checked) => handleStatusChange(checked ? "IN_PROGRESS" : "")}
+            >
+              In Progress
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={statusFilter === "COMPLETED"}
+              onCheckedChange={(checked) => handleStatusChange(checked ? "COMPLETED" : "")}
+            >
+              Completed
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              checked={priorityFilter === "ALL"}
+              onCheckedChange={(checked) => handlePriorityChange(checked ? "ALL" : "")}
+            >
+              All
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={priorityFilter === "HIGH"}
+              onCheckedChange={(checked) => handlePriorityChange(checked ? "HIGH" : "")}
+            >
+              High
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={priorityFilter === "MEDIUM"}
+              onCheckedChange={(checked) => handlePriorityChange(checked ? "MEDIUM" : "")}
+            >
+              Medium
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={priorityFilter === "LOW"}
+              onCheckedChange={(checked) => handlePriorityChange(checked ? "LOW" : "")}
+            >
+              Low
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {loading ? (
@@ -380,13 +380,27 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading, onT
       />
       {editTask && (
         <EditTaskDialog
-          task={editTask}
+          task={{
+            ...editTask!,
+            creator: users.find(user => user.id === editTask!.creatorId) || {
+              id: editTask!.creatorId,
+              name: '',
+              email: '',
+              image: ''
+            },
+            assignee: users.find(user => user.id === editTask!.assigneeId) || {
+              id: editTask!.assigneeId || '',
+              name: '',
+              email: '',
+              image: ''
+            }
+          }} as Task
           users={users}
           open={editTaskOpen}
-          onOpenChange={(open) => {
-            setEditTaskOpen(open)
-            if (!open) {
-              setEditTask(null)
+          onOpenChange={setEditTaskOpen}
+          onTaskUpdated={(updatedTask) => {
+            if (onTaskUpdated) {
+              onTaskUpdated(updatedTask)
             }
           }}
         />

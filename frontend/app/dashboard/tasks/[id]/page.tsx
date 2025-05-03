@@ -4,14 +4,15 @@ import { useEffect, useState, use } from "react"
 import { useRouter } from "next/navigation"
 import { TaskDetail } from "@/components/tasks/task-detail"
 
-export default function TaskDetailPage({ params }: { params: { id: string } }) {
+export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [task, setTask] = useState(null)
   const [users, setUsers] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const { id } = params
+  // Unwrap params using React.use()
+  const { id } = use(params)
 
   useEffect(() => {
     const token = localStorage.getItem("token")

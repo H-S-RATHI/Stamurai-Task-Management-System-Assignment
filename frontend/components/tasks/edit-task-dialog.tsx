@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
@@ -59,23 +59,25 @@ interface EditTaskDialogProps {
   users: User[]
   open: boolean
   onOpenChange: (open: boolean) => void
+  onTaskUpdated?: (task: Task) => Promise<void> | void
 }
 
-export function EditTaskDialog({ task, users, open, onOpenChange }: EditTaskDialogProps) {
+export function EditTaskDialog({ task, users, open, onOpenChange, onTaskUpdated }: EditTaskDialogProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: task.title,
-      description: task.description || "",
-      status: task.status as "TODO" | "IN_PROGRESS" | "COMPLETED",
-      priority: task.priority as "LOW" | "MEDIUM" | "HIGH",
-      dueDate: new Date(task.dueDate),
-      assigneeId: task.assigneeId,
-    },
   })
+
+  useEffect(() => {
+    form.setValue("title", task.title)
+    form.setValue("description", task.description || "")
+    form.setValue("status", task.status as "TODO" | "IN_PROGRESS" | "COMPLETED")
+    form.setValue("priority", task.priority as "LOW" | "MEDIUM" | "HIGH")
+    form.setValue("dueDate", new Date(task.dueDate))
+    form.setValue("assigneeId", task.value)
+  }, [task, form])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
@@ -93,6 +95,12 @@ export function EditTaskDialog({ task, users, open, onOpenChange }: EditTaskDial
 
       if (!response.ok) {
         throw new Error("Failed to update task")
+      }
+
+      const updatedTask = await response.json()
+
+      if (onTaskUpdated) {
+        onTaskUpdated(updatedTask)
       }
 
       toast({
@@ -232,7 +240,7 @@ export function EditTaskDialog({ task, users, open, onOpenChange }: EditTaskDial
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.assigneeId}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Assign to..." />

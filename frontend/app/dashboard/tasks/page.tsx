@@ -20,6 +20,12 @@ export default function TasksPage() {
     setTasks(prev => [...prev, newTask])
   }
 
+  const handleTaskUpdated = async (updatedTask: Task) => {
+    setTasks(prev => prev.map(task => 
+      task.id === updatedTask.id ? updatedTask : task
+    ))
+  }
+
   const fetchTasks = useCallback(async () => {
     setLoading(true)
     const token = localStorage.getItem("token")
@@ -99,6 +105,7 @@ export default function TasksPage() {
         users={users}
         currentUser={currentUser || { id: '', name: '', email: '', image: '' }}
         searchParams={Object.fromEntries(searchParams.entries())}
+        onTaskUpdated={handleTaskUpdated}
         loading={loading}
         onTaskDeleted={(deletedId) => setTasks(tasks => tasks.filter(task => task.id !== deletedId))}
         onTaskCreated={handleTaskCreated}
