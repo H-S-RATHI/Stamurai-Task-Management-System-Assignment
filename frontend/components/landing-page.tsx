@@ -4,6 +4,7 @@ import { CheckCircle, Users, Bell, Search, Shield, Clock } from "lucide-react"
 
 export function LandingPage() {
   return (
+    <div className="w-full justify-center">
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center">
         <Link href="/" className="flex items-center justify-center">
@@ -19,7 +20,7 @@ export function LandingPage() {
           </Link>
         </nav>
       </header>
-      <main className="flex-1">
+      <main className="flex-1 mx-12">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
@@ -79,7 +80,7 @@ export function LandingPage() {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section className="px-10 w-full py-12 md:py-24 lg:py-32 bg-muted">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -147,6 +148,7 @@ export function LandingPage() {
           </Link>
         </nav>
       </footer>
+    </div>
     </div>
   )
 }
