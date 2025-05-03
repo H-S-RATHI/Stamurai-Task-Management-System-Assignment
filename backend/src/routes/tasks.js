@@ -130,4 +130,45 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// PATCH /api/tasks/:id
+router.patch('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { title, description, status, priority, dueDate, assigneeId } = req.body;
+
+  try {
+    // Get the task to check permissions
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Only allow updates if the user is the creator or assignee
+    if (task.creatorId !== req.user.id && task.assigneeId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to update this task' });
+    }
+
+    // Update the task
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        status,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : task.dueDate,
+        assigneeId: assigneeId || null,
+      },
+      include: { creator: true, assignee: true },
+    });
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router; 
