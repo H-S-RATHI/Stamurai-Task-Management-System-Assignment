@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { TaskList } from "@/components/tasks/task-list"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
 import { toast } from "@/components/ui/use-toast"
+import type { Task, User } from "@/components/tasks/task-list"
 
 export default function TasksPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [tasks, setTasks] = useState([])
-  const [users, setUsers] = useState([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
@@ -98,6 +99,7 @@ export default function TasksPage() {
         currentUser={currentUser || { id: '', name: '', email: '', image: '' }}
         searchParams={Object.fromEntries(searchParams.entries())}
         loading={loading}
+        onTaskDeleted={(deletedId) => setTasks(tasks => tasks.filter(task => task.id !== deletedId))}
       />
     </>
   )

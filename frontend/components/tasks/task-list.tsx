@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChevronDown, Filter, Plus, Search, SlidersHorizontal } from "lucide-react"
+import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,14 +22,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
 import { formatDistanceToNow } from "date-fns"
 
-interface User {
+export interface User {
   id: string
   name?: string | null
   email?: string | null
   image?: string | null
 }
 
-interface Task {
+export interface Task {
   id: string
   title: string
   description: string
@@ -56,9 +56,10 @@ interface TaskListProps {
   currentUser: User
   searchParams: { [key: string]: string | string[] | undefined }
   loading?: boolean
+  onTaskDeleted?: (id: string) => void
 }
 
-export function TaskList({ tasks, users, currentUser, searchParams, loading }: TaskListProps) {
+export function TaskList({ tasks, users, currentUser, searchParams, loading, onTaskDeleted }: TaskListProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
@@ -154,6 +155,21 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading }: T
         return status
     }
   }
+
+  const handleDelete = async (taskId: string) => {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete task");
+      if (onTaskDeleted) onTaskDeleted(taskId);
+    } catch (e) {
+      alert("Failed to delete task. Please try again.");
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -288,6 +304,7 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading }: T
                 <TableHead>Priority</TableHead>
                 <TableHead>Assignee</TableHead>
                 <TableHead>Due Date</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -325,6 +342,11 @@ export function TaskList({ tasks, users, currentUser, searchParams, loading }: T
                     >
                       {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

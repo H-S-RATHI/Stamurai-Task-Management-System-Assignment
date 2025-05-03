@@ -103,4 +103,31 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// DELETE /api/tasks/:id
+router.delete('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  console.log(`[DEBUG] DELETE /api/tasks/${id}`);
+  try {
+    // Only allow deletion if the user is the creator or assignee
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
+    console.log('[DEBUG] Found task:', task);
+    if (!task) {
+      console.log('[DEBUG] Task not found for id:', id);
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    if (task.creatorId !== req.user.id && task.assigneeId !== req.user.id) {
+      console.log('[DEBUG] Not authorized to delete task:', id, 'User:', req.user.id);
+      return res.status(403).json({ message: 'Not authorized to delete this task' });
+    }
+    await prisma.task.delete({ where: { id } });
+    console.log('[DEBUG] Task deleted:', id);
+    res.status(204).end();
+  } catch (error) {
+    console.error('[DEBUG] Error deleting task:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router; 
